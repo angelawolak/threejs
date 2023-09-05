@@ -10,7 +10,7 @@ import GUI from 'lil-gui'
  * Base
  */
 // Debug
-const gui = new GUI()
+// const gui = new GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -35,12 +35,17 @@ const matcapDonutTexture= textureLoader.load('/textures/matcaps/10.png')
 
 const fontLoader = new FontLoader()
 
+const editableText = {
+    message: 'Hey there!'
+}
+
+
 fontLoader.load(
     '/fonts/Recursive_Sn_Csl_St_XBk_Italic.json',
     (font) => {
-        console.log('font loaded')
 
-        const textGeometry = new TextGeometry( 'Hi there!', {
+
+        const textGeometry = new TextGeometry( editableText.message, {
             font: font,
             size: 0.5,
             height: 0.2,
@@ -60,6 +65,7 @@ fontLoader.load(
         // )
         
         textGeometry.center()
+
        
         // console.log(textGeometry.boundingBox)
     
@@ -70,7 +76,19 @@ fontLoader.load(
         const text = new THREE.Mesh(textGeometry, textMaterial)
         scene.add(text)
 
+
+        // gui
+        // .add(editableText, 'message')
+        // .name('Edit text')
+        // .onChange(() =>
+        // {
+        //     scene.remove(text)
+        //     scene.add(text)
+        // })
+
+        // add timer to check performance
         console.time('donuts')
+
         const donutGeometry = new THREE.TorusGeometry(0.3, 0.2, 20, 45)
         const donutMaterial = new THREE.MeshMatcapMaterial({
             matcap: matcapDonutTexture

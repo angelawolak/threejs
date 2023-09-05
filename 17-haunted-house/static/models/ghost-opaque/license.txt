@@ -1,0 +1,11 @@
+Model Information:
+* title:	Spooky Ghost
+* source:	https://sketchfab.com/3d-models/spooky-ghost-072da1663fc74b508d04b66932aee8a9
+* author:	nessafrye (https://sketchfab.com/nessafrye)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Spooky Ghost" (https://sketchfab.com/3d-models/spooky-ghost-072da1663fc74b508d04b66932aee8a9) by nessafrye (https://sketchfab.com/nessafrye) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
