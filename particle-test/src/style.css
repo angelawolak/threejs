@@ -1,0 +1,58 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body
+{
+    overflow-x: hidden;
+}
+
+.webgl {
+    position: absolute;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+.webgl-overlay {
+    color: white;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: rgba(255, 255, 255, .2);
+}
+
+.header p {
+    padding: 2em 4vw 1em;
+}
+
+.overlay-body {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    max-width: 60em;
+    /* background-color: rgba(255, 255, 255, .2); */
+    padding-bottom: 4vw;
+}
+
+h1 {
+    padding: 4vw;
+}
+
+.page-body {
+    background-color: white;
+    position: relative;
+    padding: 4vw;
+}
+
+h2, p {
+    margin-bottom: 1em;
+    max-width: 50em;
+}
