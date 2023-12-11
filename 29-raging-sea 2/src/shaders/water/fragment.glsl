@@ -8,6 +8,12 @@ uniform float uColorMultiplier;
 varying float vElevation;
 varying vec2 vUv;
 varying float vTime;
+varying vec3 vColor;
+
+varying vec3 vColorGreen;
+varying vec3 vColorForestGreen;
+varying vec3 vColorBlue;
+varying vec3 vColorBlack;
 
 float random (vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233)))* 43758.5453123);
@@ -69,12 +75,12 @@ float cnoise(vec2 P){
 
 void main(){
 
-    float mixStrength = (vElevation + uColorOffset) * uColorMultiplier; 
-    vec3 color = mix(uDepthColor, uSurfaceColor, mixStrength);
+    // float mixStrength = (vElevation + uColorOffset) * uColorMultiplier; 
+    // vec3 color = mix(uDepthColor, uSurfaceColor, mixStrength);
 
-    gl_FragColor =  vec4(color, 1.0);
+    // gl_FragColor =  vec4(color, 1.0);
 
-//=--------------------
+//--------------------
 
     // vec2 gridUv = vec2(
     //     floor(vUv.x * 10.0) / 10.0,
@@ -85,5 +91,21 @@ void main(){
 
     // vec3 mixedColor = mix(uDepthColor, uSurfaceColor, strength);
     // gl_FragColor = vec4(mixedColor, 1.0);
+
+//--------------------
+
+    float step1 = 0.3;
+    float step2 = 0.4;
+    float step3 = 0.9;
+
+    vec3    vColor = mix(vColorBlack, vColorForestGreen, smoothstep(0.0, step1, vElevation));
+            vColor = mix(vColor, vColorBlue, smoothstep(step1, step2, vElevation));
+            vColor = mix(vColor, vColorGreen, smoothstep(step2, 1.0, vElevation));
+
+
+    
+
+    gl_FragColor = vec4(vColor, 1.0);
+
 
 }

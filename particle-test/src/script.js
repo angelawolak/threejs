@@ -15,119 +15,87 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
+scene.background = new THREE.Color( 0xf0f0f0 );
+
+// Light
+const light = new THREE.DirectionalLight( 0xffffff, 3 );
+light.position.set( 1, 1, 1 ).normalize();
+scene.add( light );
 
 /**
- * Galaxy
+ * Geometry
  */
-const parameters = {}
-parameters.count = 200000
-parameters.size = 0.005
-parameters.radius = 5
-parameters.branches = 3
-parameters.spin = 1
-parameters.randomness = 0.5
-parameters.randomnessPower = 3
-parameters.insideColor = '#ff6030'
-parameters.outsideColor = '#1b3984'
 
-let geometry = null
-let material = null
-let points = null
+const geometry = new THREE.InstancedBufferGeometry();
 
-const generateGalaxy = () =>
-{
-    if(points !== null)
-    {
-        geometry.dispose()
-        material.dispose()
-        scene.remove(points)
-    }
+// positions
+const positions = new THREE.BufferAttribute(new Float32Array(4 * 3), 3);
+positions.setXYZ(0, -0.5, 0.5, 0.0);
+positions.setXYZ(1, 0.5, 0.5, 0.0);
+positions.setXYZ(2, -0.5, -0.5, 0.0);
+positions.setXYZ(3, 0.5, -0.5, 0.0);
+geometry.addAttribute('position', positions);
 
-    /**
-     * Geometry
-     */
-    geometry = new THREE.BufferGeometry()
+// uvs
+const uvs = new THREE.BufferAttribute(new Float32Array(4 * 2), 2);
+uvs.setXYZ(0, 0.0, 0.0);
+uvs.setXYZ(1, 1.0, 0.0);
+uvs.setXYZ(2, 0.0, 1.0);
+uvs.setXYZ(3, 1.0, 1.0);
+geometry.addAttribute('uv', uvs);
 
-    const positions = new Float32Array(parameters.count * 3)
-    const colors = new Float32Array(parameters.count * 3)
-    const scales = new Float32Array(parameters.count * 1)
-    const randomness = new Float32Array(parameters.count * 3)
+// index
+geometry.setIndex(new THREE.BufferAttribute(new Uint16Array([ 0, 2, 1, 2, 3, 1 ]), 1));
 
-    const insideColor = new THREE.Color(parameters.insideColor)
-    const outsideColor = new THREE.Color(parameters.outsideColor)
+const indices = new Uint16Array(this.numPoints);
+const offsets = new Float32Array(this.numPoints * 3);
+const angles = new Float32Array(this.numPoints);
 
-    for(let i = 0; i < parameters.count; i++)
-    {
-        const i3 = i * 3
+for (let i = 0; i < this.numPoints; i++) {
+	offsets[i * 3 + 0] = i % this.width;
+	offsets[i * 3 + 1] = Math.floor(i / this.width);
 
-        // Position
-        const radius = Math.random() * parameters.radius
+	indices[i] = i;
 
-        const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2
-
-
-
-        positions[i3    ] = Math.cos(branchAngle) * radius
-        positions[i3 + 1] = 0
-        positions[i3 + 2] = Math.sin(branchAngle) * radius
-
-        // Randomness
-        const randomX = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : - 1) * parameters.randomness * radius
-        const randomY = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : - 1) * parameters.randomness * radius
-        const randomZ = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : - 1) * parameters.randomness * radius
-
-        randomness[i3 + 0] = randomX
-        randomness[i3 + 1] = randomY
-        randomness[i3 + 2] = randomZ
-
-
-        // Color
-        const mixedColor = insideColor.clone()
-        mixedColor.lerp(outsideColor, radius / parameters.radius)
-
-        colors[i3    ] = mixedColor.r
-        colors[i3 + 1] = mixedColor.g
-        colors[i3 + 2] = mixedColor.b
-
-        scales[i] = Math.random()
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
-    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1) )
-    geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3) )
-
-    /**
-     * Material
-     */
-    material = new THREE.ShaderMaterial({
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        vertexColors: true,
-        vertexShader: galaxyVertexShader,
-        fragmentShader: galaxyFragmentShader,
-        uniforms: {
-            uSize: { value: 30 * renderer.getPixelRatio() },
-            uTime: { value: 0 }
-        }
-    })
-
-    /**
-     * Points
-     */
-    points = new THREE.Points(geometry, material)
-    scene.add(points)
+	angles[i] = Math.random() * Math.PI;
 }
 
+geometry.addAttribute('pindex', new THREE.InstancedBufferAttribute(indices, 1, false));
+geometry.addAttribute('offset', new THREE.InstancedBufferAttribute(offsets, 3, false));
+geometry.addAttribute('angle', new THREE.InstancedBufferAttribute(angles, 1, false));
 
 
-gui.add(parameters, 'count').min(100).max(1000000).step(100).onFinishChange(generateGalaxy)
-gui.add(parameters, 'radius').min(0.01).max(20).step(0.01).onFinishChange(generateGalaxy)
-gui.add(parameters, 'branches').min(2).max(20).step(1).onFinishChange(generateGalaxy)
-gui.add(parameters, 'randomness').min(0).max(2).step(0.001).onFinishChange(generateGalaxy)
-gui.add(parameters, 'randomnessPower').min(1).max(10).step(0.001).onFinishChange(generateGalaxy)
-gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
-gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
+/**
+ * Material
+ */
+const uniforms = {
+	uTime: { value: 0 },
+	uRandom: { value: 1.0 },
+	uDepth: { value: 2.0 },
+	uSize: { value: 0.0 },
+	uTextureSize: { value: new THREE.Vector2(this.width, this.height) },
+	uTexture: { value: this.texture },
+	uTouch: { value: null }
+};
+
+const material = new THREE.RawShaderMaterial({
+	uniforms,
+	vertexShader: glslify(require('../../../shaders/particle.vert')),
+	fragmentShader: glslify(require('../../../shaders/particle.frag')),
+	depthTest: false,
+	transparent: true
+});
+
+
+
+
+
+/**
+ * Raycaster
+ */
+
+const raycaster = new THREE.Raycaster();
+
 
 /**
  * Sizes
@@ -137,34 +105,16 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
 
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
 
 /**
  * Camera
  */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 3
-camera.position.y = 3
-camera.position.z = 3
-scene.add(camera)
 
-// Controls
-// const controls = new OrbitControls(camera, canvas)
-// controls.enableDamping = true
+const camera = new THREE.PerspectiveCamera( 70, sizes.width / sizes.height, 0.1, 100 );
+// const frustumSize = 30
+// const aspect = sizes.width / sizes.height
+// const camera = new THREE.OrthographicCamera( frustumSize * aspect * -0.5, frustumSize * aspect * 0.5, frustumSize * -0.5, frustumSize * 0.5, 1, 1000 );
 
 /**
  * Renderer
@@ -175,11 +125,50 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+
 /**
- * Generate galaxy
+ * Resize
  */
 
-generateGalaxy()
+window.addEventListener('resize', () =>
+{
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+
+
+    // const aspect = sizes.width / sizes.height
+    // camera.left = - frustumSize * aspect / 2;
+    // camera.right = frustumSize * aspect / 2;
+    // camera.top = frustumSize / 2;
+    // camera.bottom = - frustumSize / 2;
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+})
+
+/**
+ * Pointer movement
+ */
+
+let INTERSECTED;
+
+const pointer = new THREE.Vector2();
+const radius = 5;
+
+document.addEventListener( 'mousemove', onPointerMove );
+
+function onPointerMove( event ) {
+    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+
 
 
 /**
@@ -191,11 +180,40 @@ const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
 
-    // Update material
-    material.uniforms.uTime.value = elapsedTime
 
-    // Update controls
-    // controls.update()
+    // find intersections
+
+    // raycaster.setFromCamera( pointer, camera );
+
+    // const intersects = raycaster.intersectObjects( scene.children, false );
+
+    // if ( intersects.length > 0 ) {
+
+    //     if ( INTERSECTED != intersects[ 0 ].object ) {
+
+    //         if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+    //         INTERSECTED = intersects[ 0 ].object;
+    //         INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+    //         INTERSECTED.material.emissive.setHex( 0xff0000 );
+
+    //         INTERSECTED.scale.set(1.3, 1.3, 1.3)
+    //         console.log(INTERSECTED.scale)
+    //         // INTERSECTED.scale(1.2, 1.2, 1.2)
+
+    //     }
+
+    // } else {
+
+    //     if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+    //     INTERSECTED = null;
+
+    // }
+
+
+
+
 
     // Render
     renderer.render(scene, camera)

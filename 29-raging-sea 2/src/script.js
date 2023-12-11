@@ -51,6 +51,11 @@ const waterMaterial = new THREE.ShaderMaterial({
         uColorOffset: { value: 0.08 },
         uColorMultiplier: { value: 5 },
 
+        uColorBlack: { value: new THREE.Color( 0x000000 )},
+        uColorGreen: { value: new THREE.Color( 0x99ffcf )},
+        uColorForestGreen: { value: new THREE.Color( 0x022146 )},
+        uColorBlue: { value: new THREE.Color( 0x0671ff )},
+
     }
 })
 

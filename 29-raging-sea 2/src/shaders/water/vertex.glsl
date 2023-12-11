@@ -10,10 +10,19 @@ uniform float uSmallWavesFrequency;
 uniform float uSmallWavesSpeed;
 uniform float uSmallWavesIterations;
 
+uniform vec3 uColorGreen;
+uniform vec3 uColorForestGreen;
+uniform vec3 uColorBlue;
+uniform vec3 uColorBlack;
 
 varying float vElevation;
 varying vec2 vUv;
 varying float vTime;
+
+varying vec3 vColorGreen;
+varying vec3 vColorForestGreen;
+varying vec3 vColorBlue;
+varying vec3 vColorBlack;
 
 void main(){
 
@@ -37,9 +46,15 @@ void main(){
 
     gl_Position = projectedPosition;
 
+
     // Varyings
     vElevation = elevation;
     vUv = uv;
     vTime = uTime;
+
+    vColorGreen = uColorGreen;
+    vColorForestGreen = uColorForestGreen;
+    vColorBlue = uColorBlue;
+    vColorBlack = uColorBlack;
 
 }
